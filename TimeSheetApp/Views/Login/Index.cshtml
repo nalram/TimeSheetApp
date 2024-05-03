@@ -1,0 +1,65 @@
+﻿@model timesheetapps.Models.LoginClass
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<style>
+        body {
+            background-image: url('@Url.Content("~/Background.png")');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+    footer {
+        background-color: white;
+    }
+</style>
+
+<div class="form-row">
+    <div class="form-group  col-md-4">
+    </div>
+    <div class="form-group  col-md-4">
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" style="font-weight:bold; background-color:white;"></div>
+            @Html.AntiForgeryToken()
+            <div class="card">
+                <div class="card-header container row p-0 m-0">
+                    <h5 class="card-title">&nbsp;&nbsp;&nbsp;Login</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label asp-for="EmailAddress" class="control-label required"> Email Address </label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <input asp-for="EmailAddress" class="form-control" onblur="this.value=this.value.trim();" />
+                            <span class="text-danger" asp-validation-for="EmailAddress"></span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label asp-for="Password" class="control-label required"> Password </label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <input asp-for="Password" type="password" class="form-control"/>
+                            <span class="text-danger" asp-validation-for="Password"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer container row p-0 m-0">
+                    <div class="col-md-2">
+                    </div>
+                    <div class="col-md-4">
+                        <button asp-page-handler="LogIn" class="btn btn-info form-control text-white">Login</button>
+                    </div>
+                    <div class="col-md-4">
+                        <a asp-action="Index" class="btn btn-info form-control text-white"><i class="fa fa-table"></i> Cancel </a>
+                    </div>
+                    <div class="col-md-2">
+                    </div>
+                </div>               
+            </div>
+        </form>
+    </div>
+    <div class="form-group  col-md-4">
+    </div>
+</div>

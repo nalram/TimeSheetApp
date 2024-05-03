@@ -1,0 +1,210 @@
+﻿@model timesheetapps.Models.TimeSheetClass
+
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Edit";
+    ViewData["Active"] = "TimeSheet";
+}
+
+@*Redirect to Login page after Logout*@
+@if (HttpContextAccessor.HttpContext.Session.GetString("Logout") == "1")
+{
+    <script type="text/javascript">
+        window.location.href = "@Url.Action("Index","Login")";
+    </script>
+}
+
+<form asp-action="Edit">
+    <div class="form-row">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="RecordID" />
+        <div class="form-group col-md-2">
+        </div>
+        <div class="form-group col-md-8">
+            <div class="card">
+                <div class="card-header row p-0 m-0">
+                    <h5 class="card-title">Edit Timesheet</h5>
+                </div>
+                <div class="card-body">
+                    @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1)
+                    {
+                        <div class="form-row">
+                            <div class="form-group  col-md-4">
+                                <label asp-for="UserID" class="control-label">User Name</label>
+                                <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                                <select asp-for="UserID" class="form-control" asp-items="@(new SelectList(@ViewBag.UserList, "UserID", "FullName"))" disabled>
+                                    <option selected disabled>-- Select Name --</option>
+                                </select>
+                                <span asp-validation-for="UserID" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label asp-for="Rate" class="control-label"></label>
+                                <input id="txtRate" asp-for="Rate" class="form-control" placeholder="0.00" onkeypress="return isNumberKey(event);" />
+                                <span asp-validation-for="Rate" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-2 form-check">
+                                <br>
+                                <label class="form-check-label">
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <input class="form-check-input" style="transform: scale(1.5);" id="chkChargeable" asp-for="Chargeable" onchange="SetChargeable(this)" /> @Html.DisplayNameFor(model => model.Chargeable)
+                                </label>
+                            </div>
+                            <div class="form-group col-md-2 form-check">
+                                <br>
+                                &nbsp;
+                                @if (@Model.RecordStatus == Convert.ToInt32(2))
+                                {
+                                    <input type="checkbox" style="transform: scale(1.5);" name="Islock" checked="checked" onchange="setRecordStatus(this)" />
+                                    <input type="hidden" id="hndLock" name="hndLock" value="2" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" style="transform: scale(1.5);" name="Islock" onchange="setRecordStatus(this)" />
+                                    <input type="hidden" id="hndLock" name="hndLock" value="1" />
+                                }
+                                <label class="form-check-label">Lock Record</label>
+                            </div>
+                        </div>
+
+                        <div class="form-row" style="display:none;" id="DivNonChargeReason">
+                            <div class="form-group col-md-12">
+                                <label asp-for="NonChargeReason" class="control-label">Non-Chargeable Reason</label>
+                                <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                                <textarea asp-for="NonChargeReason" class="form-control" style="text-wrap:normal;" type="text" required
+                                onblur="this.value=this.value.trim();" placeholder="Please add your Non-Chargeable Reason here"></textarea>
+                                <span asp-validation-for="NonChargeReason" class="text-danger"></span>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="AccountID" class="control-label">Account Name</label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <select asp-for="AccountID" class="form-control" asp-items="@(new SelectList(@ViewBag.AccountList, "AccountID", "AccountName"))">
+                                <option selected disabled>-- Select Account --</option>
+                            </select>
+                            <span asp-validation-for="AccountID" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label asp-for="StartDate" class="control-label">Start Date</label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <input asp-for="StartDate" class="form-control" min="2020-01-01" max="2050-12-31" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label asp-for="Hours" class="control-label"></label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <input asp-for="Hours" class="form-control" placeholder="0.00" onkeypress="return isNumberKey(event);" />
+                            <span asp-validation-for="Hours" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div hidden="hidden">
+                        <div class="form-group">
+                            <label asp-for="CreateUserID" class="control-label"></label>
+                            <input asp-for="CreateUserID" class="form-control" />
+                            <span asp-validation-for="CreateUserID" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="createDate" class="control-label"></label>
+                            <input asp-for="createDate" class="form-control" />
+                            <span asp-validation-for="createDate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="UserID" class="control-label"></label>
+                            <input asp-for="UserID" class="form-control" />
+                            <span asp-validation-for="UserID" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="Rate" class="control-label"></label>
+                            <input asp-for="Rate" class="form-control" placeholder="0.00" onkeypress="return isNumberKey(event);" />
+                            <span asp-validation-for="Rate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="RecordStatus" class="control-label"></label>
+                            <input asp-for="RecordStatus" class="form-control" />
+                            <span asp-validation-for="RecordStatus" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-12">
+                            <label asp-for="Description" class="control-label"></label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <textarea asp-for="Description" class="form-control" style="text-wrap:normal;" type="text" 
+                            onblur="this.value=this.value.trim();" placeholder="Please add your description here"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer row p-0 m-0">
+                    <div class="col-md-4">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="submit" value="Update" class="btn btn-info form-control text-white" />
+                    </div>
+                    <div class="col-md-2">
+                        <a asp-action="Index" asp-route-RecordStatus="@Model.RecordStatus" asp-route-start=@HttpContextAccessor.HttpContext.Session.GetString("StartDateFilter")
+                           asp-route-end=@HttpContextAccessor.HttpContext.Session.GetString("EndDateFilter")
+                           asp-route-NameFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispNameFilter")
+                           asp-route-AccountFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispAccountFilter")
+                           class="btn btn-info form-control text-white"><i class="fa fa-table"></i>Cancel</a>
+                    </div>
+                    <div class="col-md-4">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group col-md-2">
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<script type="text/javascript">
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : event.keyCode;
+        if (charCode != 46 && charCode > 31
+            && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    function setRecordStatus(obj) {
+        if ($(obj).is(":checked")) {
+            document.getElementById("hndLock").value = "2";
+        } else {
+            document.getElementById("hndLock").value = "1";
+        }
+    }
+
+    window.onload = function () {
+        if ($("#chkChargeable").prop("checked")) {
+            $("#DivNonChargeReason").hide();
+            document.getElementById("txtRate").disabled = false;
+        }
+        else {
+            $("#DivNonChargeReason").show();
+            document.getElementById("txtRate").value = '0.00';
+            document.getElementById("txtRate").disabled = true;
+        }
+    }
+
+    function SetChargeable(obj) {
+        if ($(obj).is(":checked")) {
+            $("#DivNonChargeReason").hide();
+            document.getElementById("txtRate").disabled = false;
+        }
+        else {
+            $("#DivNonChargeReason").show();
+            document.getElementById("txtRate").value = '0.00';
+            document.getElementById("txtRate").disabled = true;
+        }
+    }
+</script>

@@ -1,0 +1,79 @@
+﻿@model timesheetapps.Models.AccountClass
+
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Edit";
+    ViewData["Active"] = "Account";
+}
+
+@*Redirect to Login page after Logout*@
+@if (HttpContextAccessor.HttpContext.Session.GetString("Logout") == "1")
+{
+    <script type="text/javascript">
+        window.location.href = "@Url.Action("Index","Login")";
+    </script>
+}
+
+<form asp-action="Edit">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="AccountID" />
+    <div class="form-row">
+        <div class="form-group  col-md-4">
+        </div>
+        <div class="form-group  col-md-4">
+            <div class="card">
+                <div class="card-header container row p-0 m-0">
+                    <h5 class="card-title">Edit Account</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group  col-md-12">
+                            <label asp-for="AccountName" class="control-label required"> Account Name </label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <input asp-for="AccountName" class="form-control" onblur="this.value=this.value.trim();" />
+                            <span asp-validation-for="AccountName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row" hidden="hidden">
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="CreateUserID" class="control-label"></label>
+                            <input asp-for="CreateUserID" class="form-control" />
+                            <span asp-validation-for="CreateUserID" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="createDate" class="control-label"></label>
+                            <input asp-for="createDate" class="form-control" />
+                            <span asp-validation-for="createDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer container row p-0 m-0">
+                    <div class="col-md-2">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="submit" value="Update" class="btn btn-info form-control text-white" />
+                    </div>
+                    <div class="col-md-4">
+                        <a asp-action="Index" class="btn btn-info form-control text-white"><i class="fa fa-table"></i>Cancel</a>
+                    </div>
+                    <div class="col-md-2">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group  col-md-4">
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,157 @@
+﻿@model ReflectionIT.Mvc.Paging.PagingList<timesheetapps.Models.DisplayUsersClass>
+@using ReflectionIT.Mvc.Paging
+@addTagHelper*, ReflectionIT.Mvc.Paging
+
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Index";
+    ViewData["Active"] = "Users";
+}
+
+@*Redirect to Login page after Logout*@
+@if (HttpContextAccessor.HttpContext.Session.GetString("Logout") == "1")
+{
+    <script type="text/javascript">
+        window.location.href = "@Url.Action("Index","Login")";
+    </script>
+}
+
+<div class="form-row">
+    <div class="form-group  col-md-4">
+    </div>
+    <div class="form-group  col-md-4">
+        <form asp-controller="Users" asp-action="Index" method="post">
+            <div class="card">
+                <div class="card-header container row p-0 m-0">
+                    <div class="form-group  col-md-12">
+                        @{
+                            if (ViewBag.UserIsActive == "inactive")
+                            {
+                                <input type="radio" id="Active" name="UserIsActive" value="1" onclick="setValue(this)" /><label for="Active">&nbsp;&nbsp;Active User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                <input type="radio" id="InActive" name="UserIsActive" value="0" onclick="setValue(this)" checked="checked" /><label for="InActive">&nbsp;&nbsp;Deactive User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                            }
+                            else
+                            {
+                                <input type="radio" id="Active" name="UserIsActive" value="1" onclick="setValue(this)" checked="checked" /><label for="Active">&nbsp;&nbsp;Active User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                <input type="radio" id="InActive" name="UserIsActive" value="0" onclick="setValue(this)" /><label for="InActive">&nbsp;&nbsp;Deactive User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group  col-md-12">
+                            Find by Email ID <input type="text" name="searchEmailID" class="form-control" value="@ViewData["searchEmailID"]" />
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer container row p-0 m-0">
+                    <div class="col-md-2">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="submit" value="Search" class="btn btn-info form-control text-white" />
+                    </div>
+                    <div class="col-md-4">
+                        <a asp-action="Index" class="btn btn-info  form-control text-white">Reset</a>
+                    </div>
+                    <div class="col-md-2">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="form-group  col-md-4">
+    </div>
+</div>
+
+<br />
+
+@if (Model.Count() == 0)
+{
+    <h4 style="color:red; text-align: center;">No Records Found !</h4>
+}
+else
+{
+    <div class="card">
+        <div class="card-header row p-0 m-0">
+            <div class="col-md-10">
+                Total Record Count: @Model.TotalRecordCount
+                <nav>
+                    <vc:pager paging-list="@Model"></vc:pager>
+                </nav>
+            </div>
+            <div class="col-md-2">
+                <a asp-controller="Users" asp-action="Create" class="btn btn-info form-control text-white">Create User</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead class="table table-secondary">
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.FirstName)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.LastName)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.EmailAddress)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.RoleName)
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.FirstName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LastName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.EmailAddress)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.RoleName)
+                            </td>
+                            <td>
+                                @{
+                                    if (ViewBag.UserIsActive == "inactive")
+                                    {
+                                        <a asp-action="ChangeUserStatus" asp-route-id="@item.UserID" asp-route-Changeto="1" class="text-danger" onclick=" return confirm('Are you sure you want to Activate the User?')">Activate</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.UserID" class="text-info">Edit</a>
+                                        <a asp-action="ChangeUserStatus" asp-route-id="@item.UserID" asp-route-Changeto="0" class="text-danger" onclick=" return confirm('Are you sure you want to Deactivate the User?')"> | Deactivate</a>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer row p-0 m-0">
+            <nav>
+                <vc:pager paging-list="@Model"></vc:pager>
+            </nav>
+        </div>
+    </div>
+}
+
+@section scripts
+{
+    <script>
+        $('input[type=radio]').on('click', function () {
+            $("form").submit();
+        });
+    </script>
+}

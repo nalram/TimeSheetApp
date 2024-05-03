@@ -1,0 +1,279 @@
+﻿@model ReflectionIT.Mvc.Paging.PagingList<timesheetapps.Models.DisplayTimeSheetClass>
+@using ReflectionIT.Mvc.Paging
+@addTagHelper*, ReflectionIT.Mvc.Paging
+
+@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Index";
+    ViewData["Active"] = "TimeSheet";
+}
+
+@*Redirect to Login page after Logout*@
+@if (HttpContextAccessor.HttpContext.Session.GetString("Logout") == "1")
+{
+    <script type="text/javascript">
+        window.location.href = "@Url.Action("Index","Login")";
+    </script>
+}
+
+<form asp-action="Index" method="post">
+    <div class="form-row">
+        <div class="form-group  col-md-2">
+        </div>
+        <div class="form-group  col-md-8">
+            <div class="card">
+                <div class="card-header row p-0 m-0">
+                    <a class="p-0 m-0" data-toggle="collapse" href="#SearchCard" aria-expanded="false" aria-controls="SearchCard">
+                        <img src="~/Collapse.jpg" />&nbsp;&nbsp;
+                    </a>
+                    <h5 class="card-title">Search Timesheet</h5>
+                </div>
+                <div id="SearchCard" class="card-body collapse show">
+                    <div class="form-row">
+                        <div class="form-group  col-md-4">
+                            <label class="control-label">Record status</label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label>
+                            <select name="RecordStatus" class="form-control" asp-for="@ViewData["RecordFilter"]">
+                                <option value="1" selected="selected">Active</option>
+                                <option value="2">Locked</option>
+                                <option value="3">Archive</option>
+                            </select>
+                        </div>
+                        <div class="form-group  col-md-4">
+                            <label class="control-label">From Date</label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label><br />
+                            <input id="startdatePicker" type="date" name="start" class="form-control" asp-for="@ViewData["StartDateFilter"]" required asp-format="{0:dd'/'MM'/'yyyy}" min="2020-01-01" max="2050-12-31" onchange="DateDifference();" />
+                            <span id="lblError" style="color:red"></span>
+                        </div>
+                        <div class="form-group  col-md-4">
+                            <label class="control-label">To Date</label>
+                            <label class="control-label font-weight-bolder" style="color:red"> * </label><br />
+                            <input id="enddatePicker" type="date" name="end" class="form-control" asp-for="@ViewData["EndDateFilter"]" required asp-format="{0:dd'/'MM'/'yyyy}" min="2020-01-01" max="2050-12-31" onchange="DateDifference();" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group  col-md-6">
+                            <label class="control-label">User Name</label>
+                            @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1)
+                            {
+                                <select class="form-control" asp-items="@(new SelectList(@ViewBag.UserList, "UserID", "FullName"))" asp-for="@ViewData["NameFilter"]" name="NameFilter">
+                                    <option value="0" selected>-- Select Name --</option>
+                                </select>
+                            }
+                            else
+                            {
+                                <select class="form-control" asp-items="@(new SelectList(@ViewBag.UserList, "UserID", "FullName"))" asp-for="@ViewData["NameFilter"]" name="NameFilter" disabled>
+                                    <option value="0" selected>-- Select Name --</option>
+                                </select>
+                            }
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="control-label">Account Name</label>
+                            <select class="form-control" asp-items="@(new SelectList(@ViewBag.AccountList, "AccountID", "AccountName"))" asp-for="@ViewData["AccountFilter"]" name="AccountFilter">
+                                <option value="0" selected>-- Select Account --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="SearchCard" class="card-footer row p-0 m-0 collapse show">
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-2">
+                        <input id="btnFilter" type="submit" value="Search" class="btn btn-info form-control text-white" />
+                    </div>
+                    <div class="col-md-2">
+                        <a asp-action="Index" asp-route-RecordStatus="1" class="btn btn-info  form-control text-white">Reset</a>
+                    </div>
+                    @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1 && @HttpContextAccessor.HttpContext.Session.GetString("RecordFilter") == "2" && Model.Count() != 0)
+                    {
+                        <div class="col-md-2">
+
+                            <input id="btnArchiveFilter" asp-action="MoveToArchive"
+                                   asp-route-start=@HttpContextAccessor.HttpContext.Session.GetString("StartDateFilter")
+                                   asp-route-end=@HttpContextAccessor.HttpContext.Session.GetString("EndDateFilter")
+                                   asp-route-NameFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispNameFilter")
+                                   asp-route-AccountFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispAccountFilter")
+                                   type="submit" value="Move to Archive"
+                                   class="btn btn-info form-control text-white" onclick="return confirm('Are you sure all the records are successfully uploaded to MYOB?')" />
+
+                        </div>
+                    }
+                    @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1 && @HttpContextAccessor.HttpContext.Session.GetString("RecordFilter") == "1" && Model.Count() != 0)
+                    {
+                        <div class="col-md-2">
+
+                            <input id="btnBulkLockFilter" asp-action="BulkLock"
+                                   asp-route-start=@HttpContextAccessor.HttpContext.Session.GetString("StartDateFilter")
+                                   asp-route-end=@HttpContextAccessor.HttpContext.Session.GetString("EndDateFilter")
+                                   asp-route-NameFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispNameFilter")
+                                   asp-route-AccountFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispAccountFilter")
+                                   type="submit" value="Bulk Lock"
+                                   class="btn btn-info form-control text-white" onclick="return confirm('Are you sure to lock all the records?')" />
+
+                        </div>
+                    }
+                    <div class="col-md-3">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group  col-md-2">
+        </div>
+    </div>
+</form>
+
+<br />
+
+@if (Model.Count() == 0)
+{
+    <h4 style="color:red; text-align: center;">No Records Found !</h4>
+}
+else
+{
+    <div class="card">
+        <div class="card-header row p-0 m-0">
+            <div class="col-md-10">
+                Total Record Count: @Model.TotalRecordCount
+                <nav>
+                    <vc:pager paging-list="@Model"></vc:pager>
+                </nav>
+            </div>
+            <div class="col-md-2">
+                <a asp-controller="TimeSheet" asp-action="Index"
+                   asp-route-RecordStatus=@HttpContextAccessor.HttpContext.Session.GetString("RecordFilter") asp-route-start=@HttpContextAccessor.HttpContext.Session.GetString("StartDateFilter")
+                   asp-route-end=@HttpContextAccessor.HttpContext.Session.GetString("EndDateFilter")
+                   asp-route-NameFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispNameFilter")
+                   asp-route-AccountFilter=@HttpContextAccessor.HttpContext.Session.GetString("dispAccountFilter")
+                   asp-route-excel=true class="btn btn-info form-control text-white">Export to Excel</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead class="table table-secondary">
+                    <tr>
+                        @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1)
+                        {
+                            <th>
+                                User Name
+                            </th>
+                        }
+                        <th>
+                            Account Name
+                        </th>
+                        <th>
+                            Start Date
+                        </th>
+                        <th>
+                            Hours
+                        </th>
+                        @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1)
+                        {
+                            <th>
+                                Rate
+                            </th>
+                            <th>
+                                Chargeable
+                            </th>
+                        }
+                        <th>
+                            Description
+                        </th>
+                        @if (@ViewData["RecordFilter"] == null || Convert.ToInt32(ViewData["RecordFilter"]) == 1 || ((@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1) && (Convert.ToInt32(ViewData["RecordFilter"]) == 2)))
+                        {
+                            <th>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1)
+                            {
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.FullName)
+                                </td>
+                            }
+                            <td>
+                                @{
+                                    var shortAccName = String.Concat(item.AccountName.Take(25));
+                                }
+                                @Html.DisplayFor(modelItem => shortAccName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.StartDate)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Hours)
+                            </td>
+                            @if (@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1)
+                            {
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Rate)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Chargeable)
+                                </td>
+                            }
+                            <td>
+                                @{
+                                    var shortDescript = String.Concat(item.Description.Take(25));
+                                }
+                                @Html.DisplayFor(modelItem => shortDescript)
+                            </td>
+
+                            @if (@ViewData["RecordFilter"] == null || Convert.ToInt32(ViewData["RecordFilter"]) == 1 || ((@HttpContextAccessor.HttpContext.Session.GetInt32("LoginRoleID") == 1) && (Convert.ToInt32(ViewData["RecordFilter"]) == 2)))
+                            {
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@item.RecordID" class="text-info ">Edit</a> |
+                                    <a asp-action="Delete" asp-route-id="@item.RecordID" class="text-danger" onclick=" return confirm('Are you sure you want to delete?')">Delete</a>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer row p-0 m-0">
+            <nav>
+                <vc:pager paging-list="@Model"></vc:pager>
+            </nav>
+        </div>
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+    function DateDifference() {
+        var date1 = new Date($("#startdatePicker").val());
+        var date2 = new Date($("#enddatePicker").val());
+        var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+        var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+        if (date1 > date2) {
+            lblError.innerHTML = "From Date must be before To Date";
+            document.getElementById("btnFilter").disabled = true;
+            if (document.getElementById("btnBulkLockFilter"))
+                document.getElementById("btnBulkLockFilter").disabled = true; 
+            if (document.getElementById("btnArchiveFilter"))
+                document.getElementById("btnArchiveFilter").disabled = true;
+        }
+        else if (diffDays > 60) {
+            lblError.innerHTML = "Date range should be below 60 days";
+            document.getElementById("btnFilter").disabled = true;
+            if (document.getElementById("btnBulkLockFilter"))
+                document.getElementById("btnBulkLockFilter").disabled = true;
+            if (document.getElementById("btnArchiveFilter"))
+                document.getElementById("btnArchiveFilter").disabled = true;
+        }
+        else {
+            lblError.innerHTML = "";
+            document.getElementById("btnFilter").disabled = false;
+            if (document.getElementById("btnBulkLockFilter"))
+                document.getElementById("btnBulkLockFilter").disabled = false;
+            if (document.getElementById("btnBulkLockFilter"))
+                document.getElementById("btnBulkLockFilter").disabled = false;
+        }
+    }
+</script>
