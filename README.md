@@ -1,7 +1,7 @@
 # Timesheet Application
 
 ## Overview
-The Timesheet Application is designed to automate time tracking, client billing, and tax processing for over 500 employees and contractors. It offers a user-friendly interface for accurately capturing work hours on various client projects, which significantly enhances the efficiency of tracking, processing, and invoicing.
+The Timesheet Application is designed to automate time tracking, client billing, and tax processing for employees and contractors. It offers a user-friendly interface for accurately capturing work hours on various client projects, which significantly enhances the efficiency of tracking, processing, and invoicing.
 
 ## Features
 - **User Authentication**: Secure login system using email ID and password.
